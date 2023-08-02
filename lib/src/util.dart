@@ -64,31 +64,28 @@ Future<types.Room> preProcessRoomDocument(
   FirebaseFirestore instance,
   String usersCollectionName,
   String otherUserID,
-) {
+) async {
   if (doc.isNotEmpty) {
     print('user has chats');
-    DocumentSnapshot<Map<String, dynamic>> docNew = doc.first;
-
     for (int i = 0; i < doc.length; i++) {
       final data = doc[i].data()!;
       final userIds = data['userIds'] as List<dynamic>;
-
+      print('current user id is ${firebaseUser.uid}');
       if (userIds.contains(firebaseUser.uid)) {
-        docNew = doc[i];
         print('user found chats');
-
+        return processRoomDocument(
+          doc[i],
+          firebaseUser,
+          instance,
+          usersCollectionName,
+        );
         break;
       }
     }
 
-    return processRoomDocument(
-      docNew,
-      firebaseUser,
-      instance,
-      usersCollectionName,
-    );
+    return await createRoom(instance, firebaseUser, otherUserID);
   } else {
-    return createRoom(instance, firebaseUser, otherUserID);
+    return await createRoom(instance, firebaseUser, otherUserID);
   }
 }
 
